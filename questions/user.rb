@@ -15,7 +15,7 @@ class User
 
   def average_karma
     return 0.0 if self.id.nil?
-    sql = <<-SQL
+    QuestionsDB.instance.get_first_value(<<-SQL, self.id, self.id)
         SELECT AVG(c) as average
           FROM
                (SELECT COUNT(*) AS c
@@ -23,9 +23,13 @@ class User
                   JOIN question_likes
                     ON questions.id = question_id
                  WHERE author_id = ?
-              GROUP BY question_id)
+                 UNION
+                SELECT 0.0 AS c
+                  FROM questions
+             LEFT JOIN question_likes
+                    ON questions.id = question_id
+                 WHERE author_id = ? AND question_likes.user_id IS NULL)
     SQL
-    QuestionsDB.instance.execute(sql, self.id).first['average']
   end
 
   def self.find_by_id(id)
@@ -67,8 +71,8 @@ class User
     else
       sql = <<-SQL
         UPDATE users
-        SET    fname = ?, lname = ?, is_instructor = ?
-        WHERE  id = ?
+           SET fname = ?, lname = ?, is_instructor = ?
+         WHERE id = ?
       SQL
       QuestionsDB.instance.execute(sql, fname, lname, instructor? ? 1 : 0, id)
     end 

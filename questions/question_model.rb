@@ -1,20 +1,12 @@
-require_relative 'findable'
-require_relative 'misc'
+require_relative 'model'
 
-class Question
-
-  attr_reader :id
-  attr_accessor :title, :body, :author_id
-
-  def initialize(title, body, author_id, id = nil)
-    @title = title
-    @body = body
-    @author_id = author_id
-    @id = id
+class Question < Model
+  attr_accessible(:title, :body, :author_id)
+  has_many(:followers, "question_followers", "question_id") do |record| 
+    User.find(record["follower_id"]) 
   end
-
-  def self.find_by_id(id)
-    Findable.find_by_table_and_id(Question, 'questions', id)
+  has_many(:likes, "question_likes", "question_id") do |record| 
+    User.find(record["user_id"]) 
   end
 
   def num_likes
@@ -24,7 +16,7 @@ class Question
       FROM question_likes
      WHERE question_id = (?)
     SQL
-    QuestionsDB.instance.get_first_value(sql, self.id)
+    QuestionsDB.instance.execute(sql, self.id)
   end
 
   def self.most_liked(n)
@@ -40,19 +32,6 @@ class Question
     QuestionsDB.instance.execute(sql, n).map { |q| Question.parse_hash(q) }
   end
 
-  def followers
-    return 0 if self.id.nil?
-    sql = <<-SQL
-      SELECT users.*
-        FROM users
-        JOIN question_followers
-          ON follower_id = users.id
-       WHERE question_id = (?)
-    SQL
-
-    QuestionsDB.instance.execute(sql, id).map { |u| User.parse_hash(u) }
-  end
-
   def self.most_followed(n)
     sql = <<-SQL
       SELECT questions.*
@@ -66,11 +45,9 @@ class Question
     QuestionsDB.instance.execute(sql, n).map { |q| Question.parse_hash(q) }
   end
 
-  def self.parse_hash(hash)
-    Question.new(hash['title'], hash['body'], hash['author_id'], hash['id'])
-  end
-
-  def replies
+  # this cannot be replaced by has_many because we want to exclude 
+  # non-root comments
+  def replies 
     return [] if self.id.nil?
     sql = <<-SQL
       SELECT  *
@@ -79,21 +56,6 @@ class Question
     SQL
 
     QuestionsDB.instance.execute(sql, id).map { |qa| Replies.parse_hash(qa) }
-  end
-
-  def most_replies(n)
-    return [] if self.id.nil?
-    sql = <<-SQL
-      SELECT b.*, COUNT(b.id) AS num_replies
-        FROM question_replies a
-        JOIN question_replies b
-          ON a.parent_id = b.id
-       WHERE a.question_id = ?
-    GROUP BY a.parent_id
-    ORDER BY COUNT(b.id) DESC
-       LIMIT ?
-    SQL
-    QuestionsDB.instance.execute(sql, id, n).map { |qa| Replies.parse_hash(qa) }
   end
 
   def asking_student
@@ -120,24 +82,6 @@ class Question
     QuestionsDB.instance.execute(sql, self.id).map { |a| QuestionAction.parse_hash(a) }
   end
 
-  def save
-    if id.nil?
-      sql = <<-SQL
-        INSERT INTO questions 
-        VALUES (NULL, ?, ?, ?)
-      SQL
-      QuestionsDB.instance.execute(sql, title, body, author_id)
-      @id = QuestionsDB.instance.last_insert_row_id
-    else
-      sql = <<-SQL
-        UPDATE questions 
-        SET    title = ?, body = ?, author_id = ?
-        WHERE  id = ?
-      SQL
-      QuestionsDB.instance.execute(sql, title, body, author_id, id)
-    end 
-  end
-
   def do_action(type)
     raise "invalid action" unless QuestionAction::VALID_ACTIONS.include?(type)
     raise "question not in db" unless self.id
@@ -155,7 +99,5 @@ class Question
     SQL
 
     QuestionsDB.instance.execute(sql, id, type_int)
-
   end
-
 end

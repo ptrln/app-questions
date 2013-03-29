@@ -13,7 +13,7 @@ CREATE TABLE users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   fname VARCHAR(255) NOT NULL,
   lname VARCHAR(255) NOT NULL,
-  is_instructor TINYINT NOT NULL
+  is_instructor ENUM(1,0) NOT NULL
 );
 
 CREATE TABLE questions (
@@ -84,11 +84,13 @@ INSERT INTO users
      VALUES (1, 'Peter','Lin', 1),
             (2, 'Nick','Awesome', 0),
             (3, 'Eric','Lin', 1),
-            (4, 'Nate', 'Hayflick', 0);
+            (4, 'Nate', 'Hayflick', 0),
+            (5, 'Ned', 'Ruggeri', 1);
 
 INSERT INTO questions
      VALUES (1, 'What the fuck?', 'Is this even working? Should we be inserting into our tables to test our methods?', 2),
-            (2, 'More question?', 'blah blah blah', 1);
+            (2, 'More question?', 'blah blah blah', 1),
+            (3, 'Third question?', 'blah blah blah', 1);
 
 INSERT INTO question_followers
      VALUES (1, 3), (1, 4), (2, 3);
@@ -99,13 +101,8 @@ INSERT INTO question_replies
 INSERT INTO question_actions (question_id, type_id)
      VALUES (2, 2);
 
-INSERT INTO question_likes
+INSERT INTO question_likes ('question_id', 'user_id')
      VALUES (1, 4), (1, 3), (2, 4);
 
 INSERT INTO question_tags
      VALUES (1, 1), (2, 3), (2, 1), (1, 4);
-
-
--- Here I cheat and assume that mathematics has id #1, physics id #2.
--- INSERT INTO professors ('first_name', 'last_name', 'department_id')
---      VALUES ('Albert', 'Einstein', 2), ('Kurt', 'Godel', 1);
