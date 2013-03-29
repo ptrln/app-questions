@@ -1,8 +1,8 @@
 require_relative 'model'
 class User < Model
   attr_accessible :fname, :lname, :is_instructor
-  has_many(:replies, "question_replies", "author_id") { |r| Replies.parse_hash(r) }
-  has_many(:questions, "questions", "author_id") { |q| Question.parse_hash(q) }
+  has_many(:replies, "question_replies", "author_id") { |r| Replies.parse(r) }
+  has_many(:questions, "questions", "author_id") { |q| Question.parse(q) }
   
   def self.table_name
     "users"

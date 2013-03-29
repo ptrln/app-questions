@@ -21,7 +21,7 @@ class Tags < Model
     SQL
     most_popular = Hash.new { Array.new }
     QuestionsDB.instance.execute(sql).each do |thingy|
-      most_popular[thingy['tag']] <<= Question.parse_hash(thingy)
+      most_popular[thingy['tag']] <<= Question.parse(thingy)
     end
     most_popular
   end

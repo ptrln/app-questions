@@ -1,22 +1,17 @@
 require_relative 'model'
 
 class Question < Model
-  attr_accessible(:title, :body, :author_id)
+  attr_accessible :title, :body
   has_many(:followers, "question_followers", "question_id") do |record| 
     User.find(record["follower_id"]) 
   end
   has_many(:likes, "question_likes", "question_id") do |record| 
     User.find(record["user_id"]) 
   end
+  belongs_to(:author, 'users') { |hash| User.parse(hash) }
 
-  def num_likes
-    return 0 if self.id.nil?
-    sql = <<-SQL
-    SELECT COUNT(user_id)
-      FROM question_likes
-     WHERE question_id = (?)
-    SQL
-    QuestionsDB.instance.execute(sql, self.id)
+  def self.table_name
+    'questions'
   end
 
   def self.most_liked(n)
@@ -29,7 +24,7 @@ class Question < Model
     ORDER BY COUNT(*) DESC
        LIMIT (?)
     SQL
-    QuestionsDB.instance.execute(sql, n).map { |q| Question.parse_hash(q) }
+    QuestionsDB.instance.execute(sql, n).map { |q| Question.parse(q) }
   end
 
   def self.most_followed(n)
@@ -42,7 +37,7 @@ class Question < Model
     ORDER BY COUNT(*) DESC
        LIMIT (?)
     SQL
-    QuestionsDB.instance.execute(sql, n).map { |q| Question.parse_hash(q) }
+    QuestionsDB.instance.execute(sql, n).map { |q| Question.parse(q) }
   end
 
   # this cannot be replaced by has_many because we want to exclude 
@@ -55,19 +50,11 @@ class Question < Model
        WHERE  question_id = ? AND parent_id IS NULL
     SQL
 
-    QuestionsDB.instance.execute(sql, id).map { |qa| Replies.parse_hash(qa) }
+    QuestionsDB.instance.execute(sql, id).map { |qa| Replies.parse(qa) }
   end
 
   def asking_student
-    return nil if self.id.nil?
-    sql = <<-SQL
-      SELECT u.*
-        FROM questions q
-        JOIN users u
-          ON q.author_id = u.id
-       WHERE q.id = ?
-    SQL
-    User.parse_hash(QuestionsDB.instance.execute(sql, self.id).first)
+    author
   end
 
   def action_history
@@ -79,7 +66,7 @@ class Question < Model
           ON qa.type_id = qat.id
        WHERE qa.question_id = ? 
     SQL
-    QuestionsDB.instance.execute(sql, self.id).map { |a| QuestionAction.parse_hash(a) }
+    QuestionsDB.instance.execute(sql, self.id).map { |a| QuestionAction.parse(a) }
   end
 
   def do_action(type)

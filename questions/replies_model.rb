@@ -1,8 +1,11 @@
 require_relative 'model'
 
 class Replies < Model
-  attr_accessible :reply_body, :parent_id, :question_id, :author_id
-  has_many(:replies, "question_replies", "parent_id") { |r| Replies.parse_hash(r) }
+  attr_accessible :reply_body
+  has_many(:replies, "question_replies", "parent_id") { |r| Replies.parse(r) }
+  belongs_to(:parent, "question_replies") { |u| User.find(u['id']) }
+  belongs_to(:question, "question_replies") { |q| Question.find(q['id']) }
+  belongs_to(:author, "question_replies") { |u| User.find(u['id']) }
 
   def self.most_replied
     sql = <<-SQL
@@ -14,6 +17,6 @@ class Replies < Model
     ORDER BY COUNT(a.id) DESC
        LIMIT 1
     SQL
-    Replies.parse_hash(QuestionsDB.instance.get_first_row(sql))
+    Replies.parse(QuestionsDB.instance.get_first_row(sql))
   end
 end
