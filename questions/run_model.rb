@@ -8,26 +8,26 @@ p User.find(1).average_karma
 
 p Question.most_liked(5).first.author
 
-# p Tags.most_popular
+p Tags.most_popular
 
-# nick = User.find(2)
-# nick.questions.first.do_action("close")
-# nick.questions.first.do_action("reopen")
+nick = User.find(2)
+nick.questions.first.do_action("close")
+nick.questions.first.do_action("reopen")
 
-# p nick.questions.first.action_history
+p nick.questions.first.action_history
 
 p Replies.most_replied.question
 
-# p User.find(2).questions
+p User.find(2).questions
 
-# p User.column_names
+p User.column_names
 
-# p User.by_fname("Ned")
+p User.by_fname("Ned")
 
-# p Replies.most_replied.replies
+p Replies.most_replied.replies
 
-# p nick.replies
+p nick.replies
 
-# nick = User.find(2)
-# nick.questions.first.followers
-# nick.questions.first.likes
+nick = User.find(2)
+nick.questions.first.followers
+nick.questions.first.likes
