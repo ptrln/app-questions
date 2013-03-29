@@ -4,7 +4,7 @@ require_relative 'replies_model'
 require_relative 'action_model'
 require_relative 'tag_model'
 
-# p User.find(1).average_karma
+p User.find(1).average_karma
 
 # p Question.most_liked(5).first.author
 
