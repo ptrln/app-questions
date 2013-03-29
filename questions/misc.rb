@@ -4,7 +4,7 @@ class Replies
   attr_reader :id
   attr_accessor :reply_body, :parent_id, :question_id, :author_id
 
-  def initialize(parent_id, question_id, reply_body, author_id, id)
+  def initialize(parent_id, question_id, reply_body, author_id, id) # REV: Again, you should use an options hash
     @parent_id, @question_id = parent_id, question_id
     @reply_body, @author_id, @id = reply_body, author_id, id
 
@@ -61,7 +61,7 @@ class Replies
   end
 end
 
-class Tags
+class Tags  # REV: Awsome! We didn't get to this part
   def self.most_popular
     sql = <<-SQL
       SELECT t.type as tag, q.*

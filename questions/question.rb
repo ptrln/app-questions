@@ -3,6 +3,9 @@ require_relative 'misc'
 
 class Question
 
+  # REV: You might want to put all the class methods at the top of the class. It would make the 
+  #      code a bit easer to follow
+
   attr_reader :id
   attr_accessor :title, :body, :author_id
 
@@ -71,7 +74,7 @@ class Question
   end
 
   def replies
-    return [] if self.id.nil?
+    return [] if self.id.nil? # REV: these returns are smart
     sql = <<-SQL
       SELECT  *
         FROM  question_replies

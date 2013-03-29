@@ -4,9 +4,9 @@ class User
   attr_reader :id
   attr_accessor :fname, :lname, :instructor
 
-  alias_method :instructor?, :instructor
+  alias_method :instructor?, :instructor # REV: good use of an alias
 
-  def initialize(fname,lname,instructor,id=nil)
+  def initialize(fname,lname,instructor,id=nil) # REV: You should pass in a single hash here
     @fname = fname
     @lname = lname
     @instructor = instructor
@@ -14,7 +14,7 @@ class User
   end
 
   def average_karma
-    return 0.0 if self.id.nil?
+    return 0.0 if self.id.nil? # REV this is a clean use of a sub-query
     sql = <<-SQL
         SELECT AVG(c) as average
           FROM
@@ -32,7 +32,7 @@ class User
     Findable.find_by_table_and_id(User, 'users', id)
   end
 
-  def self.parse_hash(hash)
+  def self.parse_hash(hash) # REV: I am not sure what this is doing
     User.new(hash['fname'], hash['lname'], hash['is_instructor'] == 1, hash['id'])
   end
 
@@ -64,7 +64,8 @@ class User
       SQL
       QuestionsDB.instance.execute(sql, fname, lname, instructor? ? 1 : 0)
       @id = QuestionsDB.instance.last_insert_row_id
-    else
+    # REV: You could make a seperate update method, to simplify this
+    else 
       sql = <<-SQL
         UPDATE users
         SET    fname = ?, lname = ?, is_instructor = ?
