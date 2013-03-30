@@ -101,7 +101,6 @@ class Model
 
   def self.define_find_by_column_names(column_name)
     self.class.send(:define_method, "by_#{column_name}") do |value|
-      raise NoMethodError unless @column_names.include?(column_name)
       sql = <<-SQL
         SELECT *
           FROM #{self.table_name}
